@@ -7,7 +7,18 @@ const PORT = process.env.PORT || 3000;
 
 // Scraper function that scrapes the blog and returns the post data
 async function scrapeBlog() {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+    args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-software-rasterizer',
+        '--no-zygote',
+        '--single-process'
+    ]
+});
+
     const page = await browser.newPage();
 
     // Navigate to the blog page
