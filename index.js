@@ -7,18 +7,7 @@ const PORT = process.env.PORT || 3000;
 
 // Scraper function that scrapes the blog and returns the post data
 async function scrapeBlog() {
-    const browser = await puppeteer.launch({
-        args: [
-            "--disable-setuid-sandbox",
-            "--no-sandbox",
-            "--single-process",
-            "--no-zygote",
-        ],
-        executablePath:
-            process.env.NODE_ENV === "production"
-                ? process.env.PUPPETEER_EXECUTABLE_PATH
-                : puppeteer.executablePath(),
-    });
+    const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
     // Navigate to the blog page
@@ -34,6 +23,7 @@ async function scrapeBlog() {
             const postUrl = article.querySelector('a') ? article.querySelector('a').href : null;
             const postTitle = article.querySelector('a').innerText || null;
             const postTime = article.querySelector('time') ? article.querySelector('time').getAttribute('datetime') : null;
+            // console.log({post/Title, postUrl, postTime})
             return {
                 postTitle,
                 postUrl,
@@ -44,6 +34,7 @@ async function scrapeBlog() {
     });
 
     let scrapedData = [];
+    console.log(articles)
 
     // Scrape the details from each post URL
     for (let article of articles) {
