@@ -11,20 +11,16 @@ RUN apt-get update \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Chrome dependencies
+# Install Chromium and its dependencies
 RUN apt-get update && apt-get install -y \
-    wget \
+    chromium \
+    fonts-liberation \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Set environment variables for Puppeteer to use its bundled Chromium
+# Set environment variables for Puppeteer to use the installed Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
-
-# Install Chromium manually
-RUN apt-get update \
-    && apt-get install -y \
-    chromium
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 # Set working directory
 WORKDIR /app
@@ -35,7 +31,7 @@ COPY package*.json ./
 # Install Node.js dependencies
 RUN npm install
 
-# Copy rest of the application code
+# Copy the rest of the application code
 COPY . .
 
 # Expose port if the application is a web service
