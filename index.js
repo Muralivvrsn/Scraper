@@ -8,24 +8,26 @@ const PORT = process.env.PORT || 3000;
 // Scraper function that scrapes the blog and returns the post data
 async function scrapeBlog() {
     const browser = await puppeteer.launch({
-    args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--disable-software-rasterizer',
-        '--no-zygote',
-        '--single-process'
-    ]
-});
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--disable-software-rasterizer',
+            '--no-zygote',
+        ]
+    });
 
     const page = await browser.newPage();
 
     // Navigate to the blog page
+    console.log("Navigating to the blog page...");
     await page.goto('https://www.signzy.com/blog/', { waitUntil: 'networkidle2' });
+    console.log("Page loaded!");
 
     // Wait for articles to be loaded
     await page.waitForSelector('article');
+    console.log("Articles found!");
 
     // Extract post URLs and metadata
     const articles = await page.evaluate(() => {
@@ -34,7 +36,6 @@ async function scrapeBlog() {
             const postUrl = article.querySelector('a') ? article.querySelector('a').href : null;
             const postTitle = article.querySelector('a').innerText || null;
             const postTime = article.querySelector('time') ? article.querySelector('time').getAttribute('datetime') : null;
-            // console.log({post/Title, postUrl, postTime})
             return {
                 postTitle,
                 postUrl,
@@ -44,23 +45,29 @@ async function scrapeBlog() {
         return articleData;
     });
 
+    console.log("Extracted articles:", articles);
+
     let scrapedData = [];
-    console.log(articles)
 
     // Scrape the details from each post URL
     for (let article of articles) {
         try {
             if (article.postUrl) {
+                console.log(`Navigating to post URL: ${article.postUrl}`);
                 const postPage = await browser.newPage();
                 await postPage.goto(article.postUrl, { waitUntil: 'networkidle2' });
+                console.log(`Post page loaded: ${article.postUrl}`);
 
                 // Wait for the content to be present
                 await postPage.waitForSelector('.entry-content');
+                console.log("Content found!");
 
                 // Extract the content of the post
                 const content = await postPage.evaluate(() => {
                     return document.querySelector('.entry-content').innerText;
                 });
+
+                console.log("Extracted content:", content);
 
                 // Add the post data to the scrapedData array
                 scrapedData.push({
